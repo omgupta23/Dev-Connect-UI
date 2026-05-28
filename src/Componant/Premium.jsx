@@ -1,128 +1,84 @@
+import { useState } from "react";
 import axios from "axios";
 import BASE_URL from "../utils/constant";
-import { Crown, Check, Sparkles, Zap } from "lucide-react";
 
 const Premium = () => {
+  const [loading, setLoading] = useState(false);
+
   const handlePayment = async () => {
+    setLoading(true);
     try {
       const { data } = await axios.post(
         BASE_URL + "/create-order",
         {},
-        {
-          withCredentials: true,
-        },
+        { withCredentials: true },
       );
 
       const options = {
         key: "rzp_test_Sum5et5dbEE5q2",
-
         amount: data.amount,
-
         currency: data.currency,
-
         order_id: data.id,
-
         name: "DevConnect",
-
         description: "Premium Membership",
-
         handler: async function (response) {
-          const verify = await axios.post(
+          await axios.post(
             BASE_URL + "/verify-payment",
-            {
-              ...response,
-            },
-            {
-              withCredentials: true,
-            },
+            { ...response },
+            { withCredentials: true },
           );
-
-          if (verify.data.success) {
-            alert("🚀 Premium Activated Successfully");
-          }
+          alert("Premium activated!");
         },
-
-        theme: {
-          color: "#8b5cf6",
-        },
+        modal: { ondismiss: () => setLoading(false) },
+        theme: { color: "#7c3aed" },
       };
 
       const razorpay = new window.Razorpay(options);
-
+      razorpay.on("payment.failed", () => setLoading(false));
       razorpay.open();
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center px-6 py-10">
-      <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-center">
-        {/* LEFT SECTION */}
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-sm text-center">
+        <span className="text-4xl">👑</span>
+        <h2 className="text-2xl font-bold text-white mt-3 mb-1">Go Premium</h2>
+        <p className="text-gray-400 text-sm mb-6">
+          One-time payment. Lifetime access.
+        </p>
 
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <Crown className="text-yellow-400" size={40} />
-            <h1 className="text-5xl font-bold">DevConnect Premium</h1>
-          </div>
-
-          <p className="text-gray-400 text-lg mb-8">
-            Unlock premium networking features and grow your developer circle
-            faster.
-          </p>
-
-          <div className="space-y-5">
-            <div className="flex items-center gap-4 bg-zinc-900 p-4 rounded-2xl">
-              <Check className="text-green-400" />
-              <p>Unlimited Connection Requests</p>
-            </div>
-
-            <div className="flex items-center gap-4 bg-zinc-900 p-4 rounded-2xl">
-              <Sparkles className="text-pink-400" />
-              <p>Boost Your Profile Visibility</p>
-            </div>
-
-            <div className="flex items-center gap-4 bg-zinc-900 p-4 rounded-2xl">
-              <Zap className="text-yellow-300" />
-              <p>Priority Access To New Features</p>
-            </div>
-
-            <div className="flex items-center gap-4 bg-zinc-900 p-4 rounded-2xl">
-              <Crown className="text-purple-400" />
-              <p>Premium Badge On Your Profile</p>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT SECTION */}
-
-        <div className="bg-gradient-to-br from-purple-900 via-zinc-900 to-black border border-purple-500/30 rounded-3xl p-8 shadow-2xl">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-300 px-4 py-2 rounded-full mb-6">
-              <Crown size={18} />
-              Most Popular
-            </div>
-
-            <h2 className="text-4xl font-bold mb-2">Premium Plan</h2>
-
-            <p className="text-gray-400 mb-6">One-time payment</p>
-
-            <div className="mb-8">
-              <span className="text-6xl font-bold">₹499</span>
-            </div>
-
-            <button
-              onClick={handlePayment}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:scale-105 transition-all duration-300 text-white font-semibold py-4 rounded-2xl text-lg shadow-lg"
+        <ul className="text-left space-y-3 mb-8">
+          {[
+            "Unlimited connection requests",
+            "Boost your profile visibility",
+            "Premium badge on profile",
+            "Priority access to new features",
+          ].map((item) => (
+            <li
+              key={item}
+              className="flex items-center gap-3 text-sm text-gray-300"
             >
-              Upgrade To Premium 🚀
-            </button>
+              <span className="text-violet-400">✓</span>
+              {item}
+            </li>
+          ))}
+        </ul>
 
-            <p className="text-sm text-gray-500 mt-4">
-              Secure payments powered by Razorpay
-            </p>
-          </div>
-        </div>
+        <div className="text-4xl font-extrabold text-white mb-6">₹499</div>
+
+        <button
+          onClick={handlePayment}
+          disabled={loading}
+          className="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors duration-200"
+        >
+          {loading ? "Opening…" : "Upgrade Now"}
+        </button>
+
+        <p className="text-gray-600 text-xs mt-4">Secured by Razorpay</p>
       </div>
     </div>
   );
