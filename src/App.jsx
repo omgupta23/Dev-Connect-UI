@@ -7,6 +7,7 @@ import Feed from "./Componant/Feed";
 import Connection from "./Componant/Connection";
 import Request from "./Componant/Request";
 import ProtectedRoute from "./Componant/ProtectedRoute";
+import Premium from "./Componant/Premium";
 
 import { Provider } from "react-redux";
 import { appstore } from "./utils/appstore";
@@ -71,6 +72,16 @@ function App() {
             }
           >
             <Route index element={<Request />} />
+          </Route>
+          <Route
+            path="/premium"
+            element={
+              <ProtectedRoute>
+                <Body />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Premium />} />
           </Route>
         </Routes>
         <ToastContainer position="top-right" autoClose={2000} />
