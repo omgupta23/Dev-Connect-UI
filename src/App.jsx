@@ -85,7 +85,7 @@ function App() {
             <Route index element={<Premium />} />
           </Route>
           <Route
-            path="/chat"
+            path="/chat/:userId"
             element={
               <ProtectedRoute>
                 <Body />
