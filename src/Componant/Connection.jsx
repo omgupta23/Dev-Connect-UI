@@ -45,7 +45,7 @@ const Connection = () => {
         >
           <div className="flex items-center gap-4">
             <img
-              src={user.photoUrl}
+              src={user?.photoUrl}
               alt="profile"
               className="w-14 h-14 rounded-full"
             />
