@@ -1,9 +1,9 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import BASE_URL from "../utils/constant";
-import { socket } from "../soket";
+import { socket } from "../socket"; // ✅ fixed typo
 
 const Chat = () => {
   const { userId } = useParams();
@@ -11,8 +11,14 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [receiver, setReceiver] = useState(null);
+  const bottomRef = useRef(null); // ✅ for auto-scroll
 
   const loggedInUser = useSelector((store) => store.user);
+
+  // Auto-scroll to latest message
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // Join socket room
   useEffect(() => {
@@ -32,34 +38,32 @@ const Chat = () => {
     };
   }, []);
 
-  useEffect(() => {
-    fetchMessages();
-    fetchReceiver();
-  }, [userId]);
-
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const res = await axios.get(BASE_URL + "/chat/" + userId, {
         withCredentials: true,
       });
-
       setMessages(res.data);
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [userId]);
 
-  const fetchReceiver = async () => {
+  const fetchReceiver = useCallback(async () => {
     try {
       const res = await axios.get(BASE_URL + "/user/" + userId, {
         withCredentials: true,
       });
-
       setReceiver(res.data);
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    fetchMessages();
+    fetchReceiver();
+  }, [fetchMessages, fetchReceiver]);
 
   const sendMessage = async () => {
     try {
@@ -67,25 +71,17 @@ const Chat = () => {
 
       await axios.post(
         BASE_URL + "/chat/send",
-        {
-          receiverId: userId,
-          text,
-        },
-        {
-          withCredentials: true,
-        },
+        { receiverId: userId, text },
+        { withCredentials: true },
       );
 
-      const newMessage = {
+      socket.emit("sendMessage", {
         senderId: loggedInUser._id,
         receiverId: userId,
         text,
-      };
+      });
 
-      socket.emit("sendMessage", newMessage);
-
-      setMessages((prev) => [...prev, newMessage]);
-      setText("");
+      setText(""); // ✅ socket's receiveMessage will add to state, no duplicate
     } catch (err) {
       console.log(err);
     }
@@ -96,11 +92,10 @@ const Chat = () => {
       {/* Header */}
       <div className="bg-gray-900 text-white p-4 flex items-center gap-3">
         <img
-          src={receiver?.photoUrl}
+          src={receiver?.photoUrl || "/default-avatar.png"} // ✅ fallback
           alt="profile"
           className="w-10 h-10 rounded-full object-cover"
         />
-
         <div>
           <h2 className="font-semibold">
             {receiver?.firstName} {receiver?.lastName}
@@ -130,6 +125,7 @@ const Chat = () => {
             </div>
           </div>
         ))}
+        <div ref={bottomRef} /> {/* ✅ auto-scroll anchor */}
       </div>
 
       {/* Input */}
@@ -139,14 +135,11 @@ const Chat = () => {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              sendMessage();
-            }
+            if (e.key === "Enter") sendMessage();
           }}
           placeholder="Type a message..."
           className="flex-1 border rounded-lg px-4 py-2 outline-none"
         />
-
         <button
           onClick={sendMessage}
           className="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600"

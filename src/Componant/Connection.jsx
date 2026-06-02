@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addconnection } from "../utils/connectionslice";
 import BASE_URL from "../utils/constant";
@@ -10,21 +10,21 @@ const Connection = () => {
   const navigate = useNavigate();
   const connections = useSelector((store) => store.connection);
 
-  useEffect(() => {
-    fetchConnections();
-  }, []);
-
-  const fetchConnections = async () => {
+  const fetchConnections = useCallback(async () => {
     try {
       const res = await axios.get(BASE_URL + "/user/connection", {
         withCredentials: true,
       });
-
       dispatch(addconnection(res.data.data));
     } catch (err) {
       console.log(err);
+      if (err.response?.status === 401) navigate("/login");
     }
-  };
+  }, [dispatch, navigate]);
+
+  useEffect(() => {
+    fetchConnections();
+  }, [fetchConnections]);
 
   if (!connections || connections.length === 0) {
     return (
@@ -40,29 +40,29 @@ const Connection = () => {
 
       {connections.map((user) => (
         <div
-          key={user._id}
+          key={user?._id}
           className="flex justify-between items-center bg-white p-4 rounded-lg mb-3"
         >
           <div className="flex items-center gap-4">
             <img
-              src={user?.photoUrl}
-              alt="profile"
-              className="w-14 h-14 rounded-full"
+              src={user?.photoUrl || "/default-avatar.png"}
+              alt={`${user?.firstName}'s profile`}
+              className="w-14 h-14 rounded-full object-cover"
             />
 
             <div>
               <h2 className="font-semibold">
-                {user?.firstName} {user.lastName}
+                {user?.firstName} {user?.lastName}
               </h2>
 
               <p className="text-gray-500 text-sm">
-                {user.age} {user.gender}
+                {user?.age} {user?.gender}
               </p>
             </div>
           </div>
 
           <button
-            onClick={() => navigate(`/chat/${user._id}`)}
+            onClick={() => navigate(`/chat/${user?._id}`)}
             className="bg-blue-500 text-white px-4 py-2 rounded"
           >
             Message
