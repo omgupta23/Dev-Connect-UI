@@ -17,6 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { Signup } from "./Componant/Signup";
 import ForgotPassword from "./Componant/ForgotPassword";
 import Home from "./Componant/Home";
+import Chat from "./Componant/Chat";
 function App() {
   return (
     <Provider store={appstore}>
@@ -82,6 +83,16 @@ function App() {
             }
           >
             <Route index element={<Premium />} />
+          </Route>
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <Body />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Chat />} />
           </Route>
         </Routes>
         <ToastContainer position="top-right" autoClose={2000} />
