@@ -52,7 +52,7 @@ const Connection = () => {
 
             <div>
               <h2 className="font-semibold">
-                {user.firstName} {user.lastName}
+                {user?.firstName} {user.lastName}
               </h2>
 
               <p className="text-gray-500 text-sm">

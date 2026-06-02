@@ -70,18 +70,18 @@ const Request = () => {
               {/* User Info */}
               <div className="flex items-center gap-4">
                 <img
-                  src={user.photoUrl}
+                  src={user?.photoUrl}
                   alt="profile"
                   className="w-16 h-16 rounded-full object-cover border border-gray-700"
                 />
 
                 <div>
                   <h2 className="text-lg font-semibold">
-                    {user.firstName} {user.lastName}
+                    {user?.firstName} {user?.lastName}
                   </h2>
 
                   <p className="text-sm text-gray-400">
-                    {user.age}, {user.gender}
+                    {user?.age}, {user?.gender}
                   </p>
 
                   <p className="text-sm text-gray-500 mt-1">{user.about}</p>
